@@ -1,33 +1,42 @@
 import { Avatar } from './Avatar';
 import { Comment } from './Comment';
+
+import { format, formatDistanceToNow } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
 import styles from './Post.module.css';
 
-export function Post() {
+export function Post({ author, content, publishedAt, id }) {
+  const formattedDate = format(publishedAt, "d 'de' LLLL 'às' HH:mm'h'", { locale: ptBR });
+  const relativeDate = formatDistanceToNow(publishedAt, {
+    locale: ptBR,
+    addSuffix: true
+  })
+
   return (
     <article className={styles.post}>
       <header>
         <div className={styles.author}>
-          <Avatar src="https://github.com/murillobazz.png" alt="Foto do autor do post." />
+          <Avatar src={author.avatarUrl} alt="Foto do autor do post." />
           <div className={styles.authorInfo}>
-            <strong>Murillo Bazilio</strong>
-            <span>Web Developer</span>
+            <strong>{author.name}</strong>
+            <span>{author.role}</span>
           </div>
         </div>
 
-        <time dateTime="2023-10-27 08:13:30" title="27 de Novembro às 08:13">Publicado há 1h</time>
+        <time title={formattedDate} dateTime={publishedAt.toISOString()}>
+          {relativeDate}
+        </time>
       </header>
 
       <div className={styles.content}>
-        <p>Fala galera! 👋🏼</p>
-        <p>Se liga no Schopenhauer:</p>
-        <p>
-          A nossa felicidade depende mais do que temos nas nossas cabeças, do que nos nossos bolsos. O destino baralha as cartas, e nós jogamos.
-        </p>
-        <p>
-          <a href="#">#schopenhauer</a>{' '}
-          <a href="">#seilaporque</a>{' '}
-          <a href="">#mastaai</a>
-        </p>
+        { content.map(line => {
+          if (line.type === 'paragraph') {
+            return <p>{ line.content }</p>
+          } else if (line.type === 'link') {
+            return <p><a href={line.content} target='_blank'>{ line.content }</a></p>
+          }
+        }) }
       </div>
 
       <form className={styles.commentForm}>
@@ -39,8 +48,6 @@ export function Post() {
       </form>
 
       <div className={styles.commentList}>
-        <Comment />
-        <Comment />
         <Comment />
       </div>
     </article>
